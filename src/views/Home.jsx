@@ -1,7 +1,4 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AnimateIcon } from "@/Components/animate-ui/icons/icon"
-
-import ThaiBasil from '@/assets/plants/ThaiBasil.png';
 import { useAuth } from '@/contexts/authContext';
 
 function Home() {
@@ -21,7 +18,7 @@ function Home() {
             <div className="justify-center" key={plant.uuid}>
               <div onClick={() => navigate(`/plant/${plant.uuid}`, { replace: true })} className="plants-list-shadow flex justify-center aspect-square rounded-xl bg-[#FEFEFE] border-2 border-[#F3F3F3]">
                 <div className="text-center self-center">
-                  <img src={ThaiBasil} className='p-[15%]'></img>
+                  <img src='https://media.discordapp.net/attachments/1226216016678359131/1447974416116879504/ThaiBasil.png?ex=693992c2&is=69384142&hm=b0b3af550a7586d1753c8579c0bed958dd6ebf231cdb400f8f1629ecff7105b9&=&format=webp&quality=lossless&width=350&height=350' className='p-[15%]'></img>
                 </div>
               </div>
               <div className="text-center text-sm">

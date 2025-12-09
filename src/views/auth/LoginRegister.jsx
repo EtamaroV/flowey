@@ -485,7 +485,7 @@ function RegisterFlow({ setPage }) {
 
 function LoginRegister() {
 
-    const [nowPage, setPage] = useState(1);
+    const [nowPage, setPage] = useState(0);
 
     return (
         <>

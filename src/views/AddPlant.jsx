@@ -44,7 +44,7 @@ function AddPlant(onPlantAdded) {
             setMQTTConnecting(true)
             const clientId = `mqtt_flowey_${Math.random().toString(16).slice(3)}`
             // เชื่อมต่อ MQTT Broker (ต้องเป็น WebSocket URL เช่น ws://broker.hivemq.com:8000/mqtt)
-            const client = mqtt.connect("wss://ws.feedpal.etamarov.me", {
+            const client = mqtt.connect(import.meta.env.VITE_MQTT_BROKER_URL, {
                 clientId,
                 clean: true,
                 connectTimeout: 4000,

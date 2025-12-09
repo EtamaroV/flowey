@@ -10,7 +10,6 @@ import { AuthProvider } from './contexts/authContext';
 
 import Home from './views/Home.jsx'
 import PlantView from './views/PlantView';
-import App from './App';
 
 import RootLayout from './RootLayout';
 import ErrorPage from './views/ErrorPage';
@@ -41,7 +40,7 @@ const router = createBrowserRouter([
       },
       {
         path: "achievements",
-        element: <App />
+        element: <Home />
       }
     ]
   }

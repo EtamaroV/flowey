@@ -1,81 +1,83 @@
+// AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '@/services/authService'; // นำเข้า authService ที่เราสร้างไว้
+import { authService } from '@/services/authService';
 import LoginRegister from '@/views/auth/LoginRegister';
 
-// 1. สร้าง Context Object
 const AuthContext = createContext(null);
 
-// 2. Custom Hook เพื่อใช้ Context ได้ง่ายขึ้น
 export const useAuth = () => {
     return useContext(AuthContext);
 };
 
-// 3. Auth Provider Component
 export const AuthProvider = ({ children }) => {
-    // สถานะหลัก: เก็บข้อมูลผู้ใช้ และสถานะการโหลด
     const [user, setUser] = useState(null);
     const [plants, setPlants] = useState(null);
-
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [loading, setLoading] = useState(true); // สำหรับจัดการการโหลดครั้งแรก
+    const [loading, setLoading] = useState(true);
 
-    const getUserData = async () => {
-        const plantsData = await authService.getPlants();
-
-        if (plantsData) {
-            setPlants(plantsData);
+    // แยกฟังก์ชันโหลดข้อมูลออกมา เพื่อเรียกใช้ซ้ำได้ง่าย
+    const fetchUserData = async () => {
+        try {
+            const plantsData = await authService.getPlants();
+            if (plantsData) {
+                setPlants(plantsData);
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
         }
-
     };
 
-    // --- ฟังก์ชันสำหรับโหลดสถานะเมื่อแอปเริ่มต้น ---
     useEffect(() => {
-        // ฟังก์ชันนี้จะทำงานเมื่อ Component ถูก Mount (โหลดครั้งแรก)
         const initializeAuth = async () => {
+            // 1. รอเช็ค Token ให้เสร็จก่อน (await สำคัญมาก)
             const isAuth = await authService.isAuthenticated();
-            // 1. ตรวจสอบว่ามี Token ใน Local Storage หรือไม่
-            if (isAuth && setLoading) {
+
+            if (isAuth) {
                 setIsAuthenticated(true);
+                // 2. ถ้า Token ผ่าน ค่อยไปดึงข้อมูล (แก้ปัญหา Server ตอบไม่ทัน)
+                await fetchUserData();
+            } else {
+                // ถ้า Token ไม่ผ่าน ก็ไม่ต้องดึงข้อมูล
+                setIsAuthenticated(false);
             }
+            
+            // 3. จบกระบวนการโหลด
             setLoading(false);
         };
 
         initializeAuth();
-        getUserData();
+        // ลบ getUserData() ตรงนี้ออก เพราะเราย้ายไปทำข้างบนแล้ว
     }, []);
 
-    const loginAction = (token) => {
-        // 1. ถ้า LoginRegister ยังไม่ได้ set token, ให้ set ตรงนี้
-        // localStorage.setItem('token', token); 
-        
-        // 2. สำคัญ: สั่ง State ให้เปลี่ยน เพื่อให้หน้าเว็บเปลี่ยนทันทีไม่ต้อง Refresh
+    const loginAction = async (token) => {
+        // ถ้ามีการรับ Token มาใหม่ ให้ set ลง local storage ก่อน (ถ้า authService ไม่ได้ทำไว้)
+        // authService.setAuthToken(token); 
+
         setIsAuthenticated(true);
         
-        // 3. (Optional) โหลดข้อมูล User มาเก็บไว้
-        // const userData = await authService.getProfile();
-        // setUser(userData);
+        // โหลดข้อมูลทันทีเมื่อ Login สำเร็จ
+        await fetchUserData();
     };
 
     const logoutAction = () => {
-        authService.logout(); // ลบ token
-        setIsAuthenticated(false); // สั่ง Render ใหม่กลับไปหน้า Login
+        authService.logout();
+        setIsAuthenticated(false);
         setUser(null);
+        setPlants(null); // เคลียร์ข้อมูลเก่าออกด้วย
     };
 
-
-    // 4. ค่าที่จะส่งผ่าน Context
     const value = {
         user,
         plants,
         isAuthenticated,
         loading,
-        login: loginAction,   // <--- ส่งออกไป
-        logout: logoutAction  // <--- ส่งออกไป
+        login: loginAction,
+        logout: logoutAction
     };
 
-    // 5. ส่ง Provider คืน
     if (loading) {
-        return <div>Loading Authentication...</div>; // แสดง Loading ขณะตรวจสอบ Token
+        // ตกแต่ง Loading ตรงนี้ได้ตามชอบ
+        return <div className="flex justify-center items-center h-screen">Loading Authentication...</div>;
     }
 
     if (isAuthenticated) {

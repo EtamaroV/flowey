@@ -18,6 +18,19 @@
     -ms-user-select: none; /* For Internet Explorer/Edge */
 }
 
+#root {
+  
+}
+
+.safeTop {
+  top: env(safe-area-inset-top);
+}
+
+body {
+  padding-top: env(safe-area-inset-top);
+  height: 100dvh;
+}
+
 html, body {
   border: none;
   margin: 0;

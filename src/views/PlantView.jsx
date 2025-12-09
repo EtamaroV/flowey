@@ -11,10 +11,6 @@ import {
     faCloudShowersWater, faSnowflake, faCloudBolt
 } from '@fortawesome/free-solid-svg-icons';
 
-import ThaiBasil from '@/assets/plants/ThaiBasil.png';
-
-import { LocationPicker } from "@/components/location-picker"
-
 
 function PlantView() {
     const location = useLocation();
@@ -182,7 +178,7 @@ function PlantView() {
     return (
         <>
 
-            <header className='fixed w-full left-0 top-0 h-17'>
+            <header className='fixed w-full left-0 h-17 safeTop'>
                 <div className='max-w-5xl m-auto flex justify-between'>
                     <div onClick={() => navigate('/', { replace: true })} className='w-11 h-11 rounded-xl m-3 p-1.5 z-50 frosted-element-shadow'>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M169.4 297.4C156.9 309.9 156.9 330.2 169.4 342.7L361.4 534.7C373.9 547.2 394.2 547.2 406.7 534.7C419.2 522.2 419.2 501.9 406.7 489.4L237.3 320L406.6 150.6C419.1 138.1 419.1 117.8 406.6 105.3C394.1 92.8 373.8 92.8 361.3 105.3L169.3 297.3z" /></svg>
@@ -206,7 +202,7 @@ function PlantView() {
 
             <div className='justify-center'>
                 <div>
-                    <img src={ThaiBasil} className='w-[50%] max-w-2xs m-auto pt-20'/>
+                    <img src='https://media.discordapp.net/attachments/1226216016678359131/1447974416116879504/ThaiBasil.png?ex=693992c2&is=69384142&hm=b0b3af550a7586d1753c8579c0bed958dd6ebf231cdb400f8f1629ecff7105b9&=&format=webp&quality=lossless&width=350&height=350' className='w-[50%] max-w-2xs m-auto pt-20'/>
                     <div className='ellipseBackground bg-[#F3F3F3] z-0'></div>
                 </div>
 

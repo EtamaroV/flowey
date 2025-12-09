@@ -13,7 +13,7 @@ function RootLayout() {
       <footer>
         <NavBar />
       </footer>
-      <main className='max-w-5xl m-auto'>
+      <main className='max-w-5xl m-auto pt-[env(safe-area-inset-top)]'>
         <Outlet />
       </main>
     </>
