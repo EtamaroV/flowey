@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import NavBar from '@/Components/NavBar.jsx';
+import NavBar from '@/components/NavBar.jsx';
 
 /**
  * RootLayout component serves as the main application structure.
