@@ -1,4 +1,5 @@
 import axios from "axios";
+import { v4 as uuidv4 } from 'uuid';
 // กำหนด Endpoint พื้นฐานของ API ของคุณ
 const API_BASE_URL = import.meta.env.VITE_BACKEND_SERVER_URL;
 const TOKEN_KEY = "authToken";
@@ -115,11 +116,63 @@ const getPlants = async () => {
     }
 };
 
+const getUser = async () => {
+    const token = getAuthToken();
+
+    if (token == null) return false;
+
+    try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_SERVER_URL}user/get-user`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        const data = response.data;
+
+        console.log(data)
+
+        if (data) {
+          return data;
+        } else {
+          return false;
+        }
+    } catch (error) {
+      return false;
+    }
+};
+
+const DEVICE_ID_KEY = 'client_uuid';
+
+const getDeviceId = () => {
+    // 1. Try to retrieve from LocalStorage
+    let deviceId = localStorage.getItem(DEVICE_ID_KEY);
+
+    // 2. If not found, generate a new one and save it
+    if (!deviceId) {
+        deviceId = uuidv4();
+        localStorage.setItem(DEVICE_ID_KEY, deviceId);
+    }
+
+    // 3. Return the ID (whether it was just created or retrieved)
+    return deviceId;
+};
+
+const clearDeviceId = () => {
+    localStorage.removeItem(DEVICE_ID_KEY);
+};
+
 // --- ส่งออกฟังก์ชันเพื่อให้ Component อื่นๆ เรียกใช้ ---
 export const authService = {
   logout,
   setAuthToken,
   getAuthToken,
   isAuthenticated,
-  getPlants
+  getPlants,
+  getUser,
+  getDeviceId,
+  clearDeviceId
 };
