@@ -5,12 +5,17 @@ import mqtt from 'mqtt';
 
 import { LocationPicker } from "@/components/location-picker"
 import { authService } from '@/services/authService';
+import { useAuth } from '@/contexts/authContext';
 
 
 function AddPlant(onPlantAdded) {
     let navigate = useNavigate(); 
+    const { refetchPlants } = useAuth();
 
-    const onClose = () => navigate('/', { replace: true })
+    const onClose = () => {
+        refetchPlants();
+        navigate('/', { replace: true })
+    }
     // onClose: Function to close the modal/page
     // onPlantAdded: Function to refresh the plant list in the parent component
 
@@ -43,7 +48,6 @@ function AddPlant(onPlantAdded) {
 
             setMQTTConnecting(true)
             const clientId = `mqtt_flowey_${Math.random().toString(16).slice(3)}`
-            // เชื่อมต่อ MQTT Broker (ต้องเป็น WebSocket URL เช่น ws://broker.hivemq.com:8000/mqtt)
             const client = mqtt.connect(import.meta.env.VITE_MQTT_BROKER_URL, {
                 clientId,
                 clean: true,
@@ -53,7 +57,7 @@ function AddPlant(onPlantAdded) {
                 reconnectPeriod: 5000,
             });
 
-            const topic = `/flowey/${deviceUuid}/status`; // Topic ตามที่ระบุ (แก้ flowe เป็น flowey ให้เข้ากับชื่อแอพ)
+            const topic = `/flowey/${deviceUuid}/status`;
 
             client.on('connect', () => {
                 console.log('Connected to MQTT, Waiting for device...');
@@ -89,10 +93,30 @@ function AddPlant(onPlantAdded) {
     };
 
     const handleChangeLocation = (value) => {
+        console.log(value)
         if (formData.location == value) return;
         setFormData(prev => ({ ...prev, 'location': value }));
         setError(''); // Clear error on typing
     };
+
+    const getTodayDate = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    function calculateAge(birthDate) {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    }
 
     // --- API Handlers ---
 
@@ -120,7 +144,7 @@ function AddPlant(onPlantAdded) {
         setLoading(true);
         try {
             const response = await axios.post(
-                `${import.meta.env.VITE_BACKEND_SERVER_URLT}plant/create`, {
+                `${import.meta.env.VITE_BACKEND_SERVER_URL}plant/create`, {
                     nickname: formData.nickname,
                     birthDate: formData.birthDate,
                     location: formData.location,
@@ -276,14 +300,15 @@ function AddPlant(onPlantAdded) {
                         className='w-full px-4 py-3 bg-hunter-green-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-hunter-green-500'
                     />
                 </div>
-                <div>
+                <div className='flex flex-col'>
                     <label className='block text-sm font-bold text-gray-700 mb-1 ml-1'>Date of Birth / Acquisition</label>
                     <input
                         type='date'
                         name='birthDate'
                         value={formData.birthDate}
                         onChange={handleChange}
-                        className='w-full px-4 py-3 bg-hunter-green-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-hunter-green-500'
+                        max={getTodayDate()}
+                        className={`px-4 py-3 h-12.5 bg-hunter-green-50 rounded-lg focus:outline-none focus:ring-2 ${calculateAge(formData.birthDate) < 0 ? 'ring-red-500' : 'ring-hunter-green-500'}`}
                     />
                 </div>
             </div>
@@ -292,7 +317,7 @@ function AddPlant(onPlantAdded) {
                 <div
                     onClick={() => setStep(2)}
                     className={`flex-1 px-5 py-3 text-white font-bold text-lg text-center rounded-lg cursor-pointer ${
-                        formData.nickname && formData.birthDate ? 'bg-hunter-green-500' : 'bg-gray-400 pointer-events-none'
+                        formData.nickname && formData.birthDate && calculateAge(formData.birthDate) >= 0 ? 'bg-hunter-green-500' : 'bg-gray-400 pointer-events-none'
                     }`}
                 >
                     Next
@@ -317,7 +342,8 @@ function AddPlant(onPlantAdded) {
             </div>
 
             <div className='flex flex-col justify-center'>
-                <LocationPicker defaultLocation='Bangkok' variant="inline" onChange={(location) => handleChangeLocation(location)}/>
+                <label className='block text-sm font-bold text-gray-700 mb-1 ml-1'>Location</label>
+                <LocationPicker defaultLocation={`${formData.location.display_name || ''}`} variant="inline" onChange={(location) => handleChangeLocation(location)}/>
             </div>
 
             <div className='flex flex-col gap-3'>

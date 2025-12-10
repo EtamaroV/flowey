@@ -31,11 +31,11 @@ const router = createBrowserRouter([
         element: <AddPlant />,
       },
       {
-        path: "plant/:id",
+        path: "plant/:uuid",
         element: <PlantView />,
       },
       {
-        path: "plant/:id/chat",
+        path: "plant/:uuid/chat",
         element: <PlantChat />,
       },
       {
