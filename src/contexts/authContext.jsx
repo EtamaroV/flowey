@@ -40,7 +40,10 @@ export const AuthProvider = ({ children }) => {
             setPlants(plantsData);
             return plantsData; // คืนค่าเพื่อให้ฟังก์ชันเรียกใช้รู้ว่าสำเร็จ
         }
-        throw new Error("Failed to fetch plant data."); // โยน Error ถ้าดึงไม่ได้
+        else {
+            setPlants([]);
+            return [];
+        }
     };
     
     // =======================================================
