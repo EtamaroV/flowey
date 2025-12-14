@@ -13,141 +13,30 @@ import {
     faBrain
 } from '@fortawesome/free-solid-svg-icons';
 
-import { v4 as uuidv4 } from 'uuid';
+import {
+    usePlantContext,
+    SoilMoistureThreshold,
+    TemperatureThreshold,
+    HumidityThreshold,
+    LightIntensityThreshold,
+    ThresholdDisplay,
+    WMO_WEATHER_MAP
+} from '@/contexts/plantContext'; // Adjust path as necessary
+
+import { useAuth } from '@/contexts/authContext';
 
 function PlantChat() {
-    const [sessionId, setSessionId] = useState(uuidv4());
-
     const { uuid } = useParams();
     let navigate = useNavigate();
 
-    const [plantNickname, setPlantNickname] = useState("เพาเพา")
-    const [plantSpecies, setPlantSpecies] = useState("Thai basil")
-    const [plantAge, setPlantAge] = useState(1)
+    // ⭐️ CONSUME CONTEXT ⭐️
+    const {
+        plantNickname, plantSpecies, plantAge,
+        soilMoisture, temperature, weather, humidity, lightIntensity,
+        isAppReady, refreshSensor
+    } = usePlantContext();
 
-    const [soilMoisture, setSoilMoisture] = useState(60)
-    const [temperature, setTemperature] = useState(35)
-    const [weather, setWeather] = useState(0)
-    const [humidity, setHumidity] = useState(65)
-    const [lightIntensity, setLightIntensity] = useState(3000)
-
-    const SoilMoistureThreshold = [
-        { min: 81, text: 'Flooded', dangerousLevel: 3 }, // High risk of root rot
-        { min: 71, text: 'Very Humid', dangerousLevel: 2 }, // Soil is saturated, caution needed
-        { min: 51, text: 'Humid', dangerousLevel: 1 }, // Good moisture, slight risk of fungus
-        { min: 31, text: 'Comfortable', dangerousLevel: 0 }, // Optimal growing range
-        { min: 11, text: 'Very Dry', dangerousLevel: 2 }, // Approaching wilting point
-        { min: 0, text: 'Extremely Arid', dangerousLevel: 3 }, // Severe drought stress
-    ];
-
-    const TemperatureThreshold = [
-        { min: 41, text: 'Dangerously Hot', dangerousLevel: 3 }, // Protein denaturation, cell death
-        { min: 31, text: 'Very Hot', dangerousLevel: 2 }, // High heat stress, photosynthesis halts
-        { min: 25, text: 'Warm', dangerousLevel: 1 }, // Optimal for warm-season plants
-        { min: 18, text: 'Cool / Mild', dangerousLevel: 0 }, // Optimal for most plants
-        { min: 10, text: 'Cold', dangerousLevel: 1 }, // Growth slows, chilling injury for tropicals
-        { min: 0, text: 'Very Cold', dangerousLevel: 2 }, // Frost risk, dormancy induced
-        { min: -10, text: 'Severe Cold', dangerousLevel: 3 }, // Freezing damage and death
-        { min: -Infinity, text: 'Extreme Cold', dangerousLevel: 3 },
-    ];
-
-    const HumidityThreshold = [
-        { min: 71, text: 'Very Humid', dangerousLevel: 2 }, // High risk of fungal diseases (e.g., powdery mildew)
-        { min: 51, text: 'Humid', dangerousLevel: 1 }, // Good for many tropicals, monitor air circulation
-        { min: 31, text: 'Comfortable', dangerousLevel: 0 }, // Ideal range for human and most plant health
-        { min: 11, text: 'Very Dry', dangerousLevel: 2 }, // High water loss, risk of spider mites
-        { min: 0, text: 'Extremely Arid', dangerousLevel: 3 }, // Rapid desiccation and severe stress
-    ];
-
-    const LightIntensityThreshold = [
-        { min: 10001, text: 'Full Sun', dangerousLevel: 2 }, // High risk of light burn for many indoor plants; optimal for succulents/veg.
-        { min: 5001, text: 'High Light', dangerousLevel: 1 }, // High growth, but still a risk for sensitive plants.
-        { min: 2001, text: 'Medium Light', dangerousLevel: 0 }, // Optimal growing range for most common houseplants.
-        { min: 501, text: 'Low Light', dangerousLevel: 1 }, // Growth is slow; insufficient for flowering/fruiting plants.
-        { min: -Infinity, text: 'Very Low', dangerousLevel: 3 }, // Chronic insufficient light (starvation); plant will decline.
-    ];
-
-    const TextColorThreshold = [
-        { min: 3, color: 'text-red-600' },
-        { min: 2, color: 'text-orange-600' },
-        { min: 1, color: 'text-yellow-500' },
-        { min: 0, color: '' },
-        { min: -Infinity, color: '' },
-    ];
-
-    // weatherUtils.js (or similar utility file)
-
-    const WMO_WEATHER_MAP = {
-        // Clear and Clouds
-        0: { description: 'Clear sky', icon: faSun },
-        1: { description: 'Mainly clear', icon: faSun },
-        2: { description: 'Partly cloudy', icon: faCloud },
-        3: { description: 'Overcast', icon: faCloud },
-
-        // Fog and Deposition
-        45: { description: 'Fog', icon: faSmog },
-        48: { description: 'Depositing rime fog', icon: faSmog },
-
-        // Drizzle
-        51: { description: 'Light Drizzle', icon: faCloudRain },
-        53: { description: 'Moderate Drizzle', icon: faCloudRain },
-        55: { description: 'Dense Drizzle', icon: faCloudRain },
-        56: { description: 'Light Freezing Drizzle', icon: faSnowflake },
-        57: { description: 'Dense Freezing Drizzle', icon: faSnowflake },
-
-        // Rain
-        61: { description: 'Slight Rain', icon: faCloudRain },
-        63: { description: 'Moderate Rain', icon: faCloudShowersHeavy },
-        65: { description: 'Heavy Rain', icon: faCloudShowersHeavy },
-        66: { description: 'Light Freezing Rain', icon: faSnowflake },
-        67: { description: 'Heavy Freezing Rain', icon: faSnowflake },
-
-        // Snow
-        71: { description: 'Slight Snow fall', icon: faSnowflake },
-        73: { description: 'Moderate Snow fall', icon: faSnowflake },
-        75: { description: 'Heavy Snow fall', icon: faSnowflake },
-        77: { description: 'Snow grains', icon: faSnowflake },
-
-        // Showers
-        80: { description: 'Slight Rain Showers', icon: faCloudShowersWater },
-        81: { description: 'Moderate Rain Showers', icon: faCloudShowersWater },
-        82: { description: 'Violent Rain Showers', icon: faCloudShowersHeavy },
-        85: { description: 'Slight Snow Showers', icon: faSnowflake },
-        86: { description: 'Heavy Snow Showers', icon: faSnowflake },
-
-        // Thunderstorms (using the CloudBolt icon for general storms)
-        95: { description: 'Thunderstorm', icon: faCloudBolt },
-        96: { description: 'Thunderstorm with slight hail', icon: faCloudBolt },
-        99: { description: 'Thunderstorm with heavy hail', icon: faCloudBolt },
-    };
-
-
-    function ThresholdDisplay(TextThreshold, value) {
-        // Find the first range object where the input 'value' is greater than or equal to the 'min'
-        const matchedRange = TextThreshold.find(
-            (range) => value >= range.min
-        );
-
-        // Determine the final text and class
-        const statusText = matchedRange ? matchedRange.text : 'ERROR';
-        const statusDangerousLevel = matchedRange ? matchedRange.dangerousLevel : -1;
-
-        const matchColor = TextColorThreshold.find(
-            (range) => statusDangerousLevel >= range.min
-        )
-
-        return { text: statusText, dangerousLevel: statusDangerousLevel, textColor: matchColor.color };
-    }
-
-    function getWeatherDetails(code) {
-        const details = WMO_WEATHER_MAP[code];
-
-        if (details) {
-            return details;
-        } else {
-            return WMO_WEATHER_MAP[0]
-        }
-    }
+    const { user } = useAuth()
 
     const [AIThinking, setAIThinking] = useState(false);
 
@@ -260,27 +149,32 @@ function PlantChat() {
         setGroupedMessages(grouped);
     }, [messages]);
 
-    let welcomeText = true;
-    useEffect(() => {
-        if (welcomeText) {
-            welcomeText = false
-            addMessage('%PLANT%', `สวัสดี เราชื่อ ${plantNickname} น้า`);
+    function getWeatherDetails(code) {
+            const details = WMO_WEATHER_MAP[code];
+            return details || WMO_WEATHER_MAP[0];
         }
-    }, [])
-
 
     const sendToAI = async (msg) => {
         try {
             setAIThinking(true);
+            await refreshSensor();
+            console.log({
+                    sessionId: user.id.toString()+"-"+uuid,
+                    userNickname: user.nickname,
+                    msg: msg,
+                    plantNickname: plantNickname,
+                    plantSpecies: plantSpecies,
+                    plantAge: plantAge,
+                    soilMoisture: `${ThresholdDisplay(SoilMoistureThreshold, soilMoisture).text}`,
+                    temperature: `${temperature}C, ${ThresholdDisplay(TemperatureThreshold, temperature).text}`,
+                    weather: `WMO Code ${weather}, ${getWeatherDetails(weather).description}`,
+                    humidity: `${humidity}%, ${ThresholdDisplay(HumidityThreshold, humidity).text}`,
+                    lightIntensity: `${lightIntensity} lux, ${ThresholdDisplay(LightIntensityThreshold, lightIntensity).text}`
+                })
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_SERVER_URL}plant-chat`, {
-                // Auth configuration for Basic Authentication
-                auth: {
-                    username: 'BaddestInTheWorld',
-                    password: 'FuckTeeOnlyMonday987654321$',
-                },
-                // Params configuration handles query string construction
                 params: {
-                    sessionId: sessionId,
+                    sessionId: user.id.toString()+"-"+uuid,
+                    userNickname: user.nickname,
                     msg: msg,
                     plantNickname: plantNickname,
                     plantSpecies: plantSpecies,
@@ -294,8 +188,10 @@ function PlantChat() {
             });
 
             addMessage("%PLANT%", response.data.message);
+            console.log(response)
             setAIThinking(false);
         } catch (err) {
+            console.log(err)
             setAIThinking(false);
         }
     }
@@ -320,6 +216,13 @@ function PlantChat() {
             <div className='w-full max-w-5xl fixed flex flex-col min-h-[100vh] justify-end bottom-0'>
 
                 <div className='chatBox flex flex-col gap-y-1.5 justify-end'>
+
+                    <div className="px-4 flex flex-row ">
+                        <div className="rounded-4xl pt-3 pl-4 pr-4 pb-2 max-w-[70%] wrap-break-word bg-hunter-green-50">
+                            สวัสดี เราชื่อ {plantNickname} น้า
+                        </div>
+                    </div>
+
                     {groupedMessages.map(msg => (
 
                         <div className={`px-4 flex flex-row ${msg.classNamesHOLDER}`} key={msg.id}>
@@ -342,7 +245,7 @@ function PlantChat() {
                     {(textbox.length > 0 || AIThinking) ? (
                         <div className='flex flex-col justify-end'>
                             <div onClick={sendMessage} className='box-shadow flex flex-row justify-center m-3 ml-0 w-11 h-11 bg-hunter-green-200 rounded-full text-center'>
-                                { AIThinking == true ?
+                                {AIThinking == true ?
                                     (
                                         <FontAwesomeIcon icon={faBrain} className='self-center' />
                                     )

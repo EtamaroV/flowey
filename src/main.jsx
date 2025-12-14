@@ -9,12 +9,13 @@ import './index.css'
 import { AuthProvider } from './contexts/authContext';
 
 import Home from './views/Home.jsx'
-import PlantView from './views/PlantView';
+import PlantView from './views/plant/PlantView';
 
 import RootLayout from './RootLayout';
 import ErrorPage from './views/ErrorPage';
-import PlantChat from './views/PlantChat';
+import PlantChat from './views/plant/PlantChat';
 import AddPlant from './views/AddPlant';
+import PlantLayout from './views/plant/PlantLayout';
 
 const router = createBrowserRouter([
   {
@@ -32,11 +33,17 @@ const router = createBrowserRouter([
       },
       {
         path: "plant/:uuid",
-        element: <PlantView />,
-      },
-      {
-        path: "plant/:uuid/chat",
-        element: <PlantChat />,
+        element: <PlantLayout />,
+        children: [
+          {
+            index: true, 
+            element: <PlantView />,
+          },
+          {
+            path: "chat", 
+            element: <PlantChat />,
+          },
+        ],
       },
       {
         path: "achievements",

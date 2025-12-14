@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
             return userData; // คืนค่าเพื่อให้ฟังก์ชันเรียกใช้รู้ว่าสำเร็จ
         }
+        
         throw new Error("Failed to fetch user data."); // โยน Error ถ้าดึงไม่ได้
     };
 
