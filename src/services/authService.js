@@ -46,16 +46,88 @@ const logout = () => {
   console.log("User logged out and token removed.");
 };
 
+// authService.js (ปรับปรุง isAuthenticated)
+const MAX_AUTH_RETRY = 3;
+const RETRY_DELAY_MS = 1000;
+
 const isAuthenticated = async () => {
   const token = getAuthToken();
-
   if (token == null) return false;
 
-  try {
-    // Axios จะแปลง Object { email, nickname, password } เป็น JSON
-    // และตั้งค่า Content-Type: application/json ให้โดยอัตโนมัติ
+  for (let attempt = 1; attempt <= MAX_AUTH_RETRY; attempt++) {
+      try {
+          const response = await axios.post(
+              `${import.meta.env.VITE_BACKEND_SERVER_URL}auth/check-token`,
+              {},
+              {
+                  headers: { Authorization: `Bearer ${token}` },
+                  // 💡 เพิ่ม timeout เพื่อป้องกันการรอนานเกินไป
+                  timeout: 5000, 
+              },
+          );
+
+          if (response.data.pass) {
+              return true;
+          } else {
+              // Server ตอบกลับว่า Token ไม่ถูกต้อง (pass: false)
+              logout();
+              return false;
+          }
+      } catch (error) {
+          // Network Error, Timeout, หรือ Server 5xx
+          if (attempt < MAX_AUTH_RETRY) {
+              console.warn(`Auth Check failed, retrying (${attempt}/${MAX_AUTH_RETRY})...`);
+              await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+          } else {
+              console.error("Auth Check failed after all retries.", error);
+              // ไม่จำเป็นต้อง logout เพราะอาจเป็น Network Error ชั่วคราว
+              return false;
+          }
+      }
+  }
+  return false;
+};
+
+const getUser = async () => {
+    const token = getAuthToken();
+
+    if (token == null) {
+      // 🚩 กรณีไม่มี Token: ไม่ต้องโยน Error แต่ถือว่าไม่ผ่านการยืนยันตัวตน
+      throw new Error("No authentication token found."); 
+    }
+
+    // ❌ ลบ try...catch ออกเพื่อให้ Axios Error ถูกโยนออกไป
     const response = await axios.post(
-      `${import.meta.env.VITE_BACKEND_SERVER_URL}auth/check-token`,
+        `${import.meta.env.VITE_BACKEND_SERVER_URL}user/get-user`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+    );
+    
+    // Axios โยน Error สำหรับ 4xx/5xx อัตโนมัติอยู่แล้ว
+    const data = response.data;
+    
+    if (data) {
+        return data;
+    } else {
+        // 🚩 กรณีได้ Response 2xx แต่ Data เป็น null/undefined
+        throw new Error("Received empty data from user/get-user endpoint.");
+    }
+};
+
+// ทำแบบเดียวกันกับ getPlants
+const getPlants = async () => {
+    const token = getAuthToken();
+
+    if (token == null) {
+      throw new Error("No authentication token found.");
+    }
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BACKEND_SERVER_URL}user/get-plants`,
       {},
       {
         headers: {
@@ -64,84 +136,16 @@ const isAuthenticated = async () => {
       },
     );
 
-    // Axios จะโยน error อัตโนมัติสำหรับสถานะ 4xx และ 5xx
-    // ดังนั้นโค้ดส่วนนี้จะทำงานต่อเมื่อ response เป็น 2xx เท่านั้น
-
     const data = response.data;
 
-    if (data.pass) {
-      return true;
+    // 💡 ข้อควรระวัง: ถ้าต้องการให้คืนค่าเป็น [] เมื่อไม่มีข้อมูล (ตามที่คุณเขียนใน AuthContext)
+    // ให้ตรวจสอบว่า data เป็น Array หรือไม่
+    if (data && Array.isArray(data)) {
+      return data;
+    } else if (data === null || data === undefined || data === "") {
+      return []; // คืนค่า Array เปล่าตามที่ตกลงกันไว้
     } else {
-      logout();
-      return false;
-    }
-  } catch (error) {
-    return false;
-  }
-  return false;
-};
-
-const getPlants = async () => {
-    const token = getAuthToken();
-
-    if (token == null) return false;
-
-    try {
-        // Axios จะแปลง Object { email, nickname, password } เป็น JSON
-        // และตั้งค่า Content-Type: application/json ให้โดยอัตโนมัติ
-        const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_SERVER_URL}user/get-plants`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
-
-        // Axios จะโยน error อัตโนมัติสำหรับสถานะ 4xx และ 5xx
-        // ดังนั้นโค้ดส่วนนี้จะทำงานต่อเมื่อ response เป็น 2xx เท่านั้น
-
-        const data = response.data;
-
-        console.log(data)
-
-        if (data) {
-          return data;
-        } else {
-          return false;
-        }
-    } catch (error) {
-      return false;
-    }
-};
-
-const getUser = async () => {
-    const token = getAuthToken();
-
-    if (token == null) return false;
-
-    try {
-        const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_SERVER_URL}user/get-user`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
-        const data = response.data;
-
-        console.log(data)
-
-        if (data) {
-          return data;
-        } else {
-          return false;
-        }
-    } catch (error) {
-      return false;
+      throw new Error("Invalid data format received from get-plants.");
     }
 };
 
