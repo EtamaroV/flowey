@@ -10,7 +10,7 @@ function Home() {
     <>
       <div className="w-full p-4">
         <div className="text-3xl font-bold pt-4">
-          Your Flowey
+          Your Flowy
         </div>
         <div className="grid grid-cols-4 gap-x-4 gap-y-2 mt-4">
           {plants.map(plant => (
