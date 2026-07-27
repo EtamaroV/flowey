@@ -1,6 +1,14 @@
 # Flowey 🌱
 
-Flowey is a modern React-based Progressive Web Application (PWA) tailored for plant tracking and management. 
+Flowey is a modern React-based Progressive Web Application (PWA) tailored for plant tracking and management. It is designed to work seamlessly with our custom Arduino MQTT library for real-time hardware monitoring.
+
+## 🔗 Hardware Integration
+
+Flowey is built to connect with the physical world! If you want to connect your own IoT devices (like ESP32 or ESP8266) to monitor soil moisture, temperature, and light levels in real-time, check out our companion Arduino library:
+
+👉 **[FloweyMqtt Arduino Library](https://github.com/EtamaroV/FloweyMqtt)**
+
+The `FloweyMqtt` library handles the device-side communication, publishing sensor data to the MQTT broker, which this React application then consumes and displays in the Plant Chat and Dashboard interfaces.
 
 ## 🚀 Tech Stack
 
@@ -12,6 +20,7 @@ Flowey is a modern React-based Progressive Web Application (PWA) tailored for pl
 
 ## ✨ Key Features
 
+*   **IoT Ready:** Integrates with [FloweyMqtt](https://github.com/EtamaroV/FloweyMqtt) for live sensor data.
 *   **User Authentication:** Secure login and registration portal.
 *   **Plant Management:** Add, view, and interact with your plants.
 *   **Plant Chat:** A specialized chat interface for plant-related data or interactions.
@@ -49,8 +58,7 @@ Flowey is a modern React-based Progressive Web Application (PWA) tailored for pl
     npm run build
     ```
 
-## 🔒 Security Best Practices
+## 📜 License
 
-*   Ensure all environmental variables are stored securely in a `.env` file.
-*   Verify that `.env` is included in your `.gitignore`.
-*   Avoid hardcoding API keys, JWT secrets, or Firebase/Supabase configuration details in client-side services.
+This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. 
+See the `LICENSE` file for more details.
