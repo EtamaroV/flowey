@@ -1,16 +1,56 @@
-# React + Vite
+# Flowey 🌱
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Flowey is a modern React-based Progressive Web Application (PWA) tailored for plant tracking and management. 
 
-Currently, two official plugins are available:
+## 🚀 Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **Framework:** React + Vite
+*   **Styling:** Tailwind CSS
+*   **PWA Support:** Vite PWA Plugin
+*   **State Management:** React Context (`authContext`, `plantContext`)
+*   **Linting:** ESLint
 
-## React Compiler
+## ✨ Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+*   **User Authentication:** Secure login and registration portal.
+*   **Plant Management:** Add, view, and interact with your plants.
+*   **Plant Chat:** A specialized chat interface for plant-related data or interactions.
+*   **Location Picker:** Select and manage location data for optimal plant care.
+*   **PWA Ready:** Installable on devices with offline-ready caching and app badges.
+*   **Custom Animations:** Features a customized UI with animated primitives.
 
-## Expanding the ESLint configuration
+## 📂 Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+*   `/src/components/`: Reusable UI elements (`NavBar`, `location-picker`, `ui/button`, `ui/input`).
+*   `/src/views/`: Main application screens (`Home`, `AddPlant`, `PlantView`, `PlantChat`, `auth/LoginRegister`).
+*   `/src/contexts/`: Application-wide state providers.
+*   `/src/services/`: API and external service integrations (`authService.js`).
+*   `/src/assets/`: Custom SVG icon components (e.g., `PlantSymbol`, `AchievementSymbol`).
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+*   Node.js (v16+ recommended)
+*   npm or yarn
+
+### Installation & Setup
+
+1.  Install the project dependencies:
+    ```bash
+    npm install
+    ```
+2.  Start the development server:
+    ```bash
+    npm run dev
+    ```
+3.  Build for production:
+    ```bash
+    npm run build
+    ```
+
+## 🔒 Security Best Practices
+
+*   Ensure all environmental variables are stored securely in a `.env` file.
+*   Verify that `.env` is included in your `.gitignore`.
+*   Avoid hardcoding API keys, JWT secrets, or Firebase/Supabase configuration details in client-side services.
